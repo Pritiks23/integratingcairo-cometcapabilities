@@ -54,13 +54,9 @@ def build_cairo_agent(builtin_tools: Optional[List[str]] = None) -> Runnable:
         block_tag_tool,
         unblock_tag_tool,
         # Integration
-        stripe_tool,
-        gmail_tool,
-        email_tool,
-        calendar_tool,
-        webapp_tool,
-        google_maps_tool,
         news_tool,
+        weather_tool,
+        pinterest_tool,
         # Add any additional tools as needed
     ]
     tools = guard_tools(tools)  # Enforce policy: block like/comment actions
@@ -72,3 +68,6 @@ def build_cairo_agent(builtin_tools: Optional[List[str]] = None) -> Runnable:
         builtin_tools=builtin_tools,
     )
     return agent
+
+
+
