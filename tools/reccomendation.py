@@ -5,6 +5,8 @@ from pydantic import BaseModel, Field
 from langchain_core.tools import StructuredTool
 from ..config import settings
 
+# ------------------ Existing Recommendation Tools ------------------ #
+
 class SetWeightsInput(BaseModel):
     weights: Dict[str, float] = Field(description="Feature weights, e.g. {'freshness':0.4,'similarity':0.3,'novelty':0.3}")
 
@@ -47,33 +49,67 @@ def block_tag(tag: str) -> Any:
 def unblock_tag(tag: str) -> Any:
     return _post("/api/control/unblock_tag", {"tag": tag})
 
-set_weights_tool = StructuredTool(
-    name="set_recommendation_weights",
-    description="Control the recommendation engine feature weights",
-    func=set_recommendation_weights,
-    args_schema=SetWeightsInput,
+# ------------------ External API Tools ------------------ #
+
+# Example 1: News API
+class NewsInput(BaseModel):
+    query: str = Field(description="Search term for news articles")
+    page_size: int = Field(default=5, description="Number of articles to return")
+
+def fetch_news(query: str, page_size: int = 5) -> Any:
+    url = "https://newsapi.org/v2/everything"
+    params = {"q": query, "pageSize": page_size, "apiKey": settings.newsapi_key}
+    with httpx.Client(timeout=10) as client:
+        r = client.get(url, params=params)
+        r.raise_for_status()
+        return r.json()
+
+news_tool = StructuredTool(
+    name="fetch_news",
+    description="Fetch latest news articles from NewsAPI",
+    func=fetch_news,
+    args_schema=NewsInput,
 )
-boost_creator_tool = StructuredTool(
-    name="boost_creator",
-    description="Temporarily boost a creator's content in recommendations",
-    func=boost_creator,
-    args_schema=BoostCreatorInput,
+
+# Example 2: OpenWeather API
+class WeatherInput(BaseModel):
+    city: str = Field(description="City to get weather for")
+
+def get_weather(city: str) -> Any:
+    url = "https://api.openweathermap.org/data/2.5/weather"
+    params = {"q": city, "appid": settings.openweather_key, "units": "metric"}
+    with httpx.Client(timeout=10) as client:
+        r = client.get(url, params=params)
+        r.raise_for_status()
+        return r.json()
+
+weather_tool = StructuredTool(
+    name="get_weather",
+    description="Get current weather for a city from OpenWeather API",
+    func=get_weather,
+    args_schema=WeatherInput,
 )
-demote_creator_tool = StructuredTool(
-    name="demote_creator",
-    description="Temporarily demote a creator's content in recommendations",
-    func=demote_creator,
-    args_schema=DemoteCreatorInput,
+
+# Example 3: Pinterest Search (Free tier using unofficial API)
+class PinterestInput(BaseModel):
+    query: str = Field(description="Search term for Pinterest pins")
+    limit: int = Field(default=5, description="Number of pins to return")
+
+def search_pinterest(query: str, limit: int = 5) -> Any:
+    url = "https://api.pinterest.com/v5/search/pins"
+    headers = {"Authorization": f"Bearer {settings.pinterest_key}"}
+    params = {"query": query, "page_size": limit}
+    with httpx.Client(timeout=10) as client:
+        r = client.get(url, params=params, headers=headers)
+        r.raise_for_status()
+        return r.json()
+
+pinterest_tool = StructuredTool(
+    name="search_pinterest",
+    description="Search Pinterest pins",
+    func=search_pinterest,
+    args_schema=PinterestInput,
 )
-block_tag_tool = StructuredTool(
-    name="block_tag",
-    description="Block a content tag/category from recommendations",
-    func=block_tag,
-    args_schema=BlockTagInput,
-)
-unblock_tag_tool = StructuredTool(
-    name="unblock_tag",
-    description="Unblock a content tag/category in recommendations",
-    func=unblock_tag,
-    args_schema=UnblockTagInput,
-)
+
+
+
