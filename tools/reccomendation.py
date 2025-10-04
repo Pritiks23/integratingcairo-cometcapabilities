@@ -51,7 +51,7 @@ def unblock_tag(tag: str) -> Any:
 
 # ------------------ External API Tools ------------------ #
 
-# Example 1: News API
+## NewsAPI
 class NewsInput(BaseModel):
     query: str = Field(description="Search term for news articles")
     page_size: int = Field(default=5, description="Number of articles to return")
@@ -71,7 +71,7 @@ news_tool = StructuredTool(
     args_schema=NewsInput,
 )
 
-# Example 2: OpenWeather API
+## OpenWeatherAPI
 class WeatherInput(BaseModel):
     city: str = Field(description="City to get weather for")
 
@@ -90,7 +90,7 @@ weather_tool = StructuredTool(
     args_schema=WeatherInput,
 )
 
-# Example 3: Pinterest Search (Free tier using unofficial API)
+## Pinterest API
 class PinterestInput(BaseModel):
     query: str = Field(description="Search term for Pinterest pins")
     limit: int = Field(default=5, description="Number of pins to return")
@@ -109,6 +109,140 @@ pinterest_tool = StructuredTool(
     description="Search Pinterest pins",
     func=search_pinterest,
     args_schema=PinterestInput,
+)
+
+## Calendly API
+class CalendlyInput(BaseModel):
+    user_email: str = Field(description="Email of the Calendly user to fetch events for")
+
+def get_calendly_events(user_email: str) -> Any:
+    url = f"https://api.calendly.com/scheduled_events"
+    headers = {"Authorization": f"Bearer {settings.calendly_key}"}
+    params = {"user": user_email, "count": 5}
+    with httpx.Client(timeout=10) as client:
+        r = client.get(url, headers=headers, params=params)
+        r.raise_for_status()
+        return r.json()
+
+calendly_tool = StructuredTool(
+    name="get_calendly_events",
+    description="Fetch upcoming Calendly events for a user",
+    func=get_calendly_events,
+    args_schema=CalendlyInput,
+)
+
+## Pixabay API
+class PixabayInput(BaseModel):
+    query: str = Field(description="Search term for images")
+    per_page: int = Field(default=5, description="Number of images to return")
+
+def search_pixabay(query: str, per_page: int = 5) -> Any:
+    url = "https://pixabay.com/api/"
+    params = {"q": query, "key": settings.pixabay_key, "per_page": per_page}
+    with httpx.Client(timeout=10) as client:
+        r = client.get(url, params=params)
+        r.raise_for_status()
+        return r.json()
+
+pixabay_tool = StructuredTool(
+    name="search_pixabay",
+    description="Search for images on Pixabay",
+    func=search_pixabay,
+    args_schema=PixabayInput,
+)
+
+## TMDB API (Movies)
+class TMDBInput(BaseModel):
+    query: str = Field(description="Search term for movies")
+    limit: int = Field(default=5, description="Number of results")
+
+def search_tmdb(query: str, limit: int = 5) -> Any:
+    url = "https://api.themoviedb.org/3/search/movie"
+    params = {"api_key": settings.tmdb_key, "query": query, "page": 1}
+    with httpx.Client(timeout=10) as client:
+        r = client.get(url, params=params)
+        r.raise_for_status()
+        return r.json().get("results", [])[:limit]
+
+tmdb_tool = StructuredTool(
+    name="search_tmdb",
+    description="Search movies on TMDB",
+    func=search_tmdb,
+    args_schema=TMDBInput,
+)
+
+## CoinGecko API
+class CryptoInput(BaseModel):
+    coin: str = Field(description="Cryptocurrency name/id")
+
+def get_crypto_price(coin: str) -> Any:
+    url = f"https://api.coingecko.com/api/v3/simple/price"
+    params = {"ids": coin, "vs_currencies": "usd"}
+    with httpx.Client(timeout=10) as client:
+        r = client.get(url, params=params)
+        r.raise_for_status()
+        return r.json()
+
+crypto_tool = StructuredTool(
+    name="get_crypto_price",
+    description="Get current price of a cryptocurrency from CoinGecko",
+    func=get_crypto_price,
+    args_schema=CryptoInput,
+)
+
+## JokeAPI
+class JokeInput(BaseModel):
+    category: str = Field(default="Any", description="Category of jokes")
+
+def get_joke(category: str = "Any") -> Any:
+    url = f"https://v2.jokeapi.dev/joke/{category}"
+    with httpx.Client(timeout=10) as client:
+        r = client.get(url)
+        r.raise_for_status()
+        return r.json()
+
+joke_tool = StructuredTool(
+    name="get_joke",
+    description="Get a random joke from JokeAPI",
+    func=get_joke,
+    args_schema=JokeInput,
+)
+
+## Dictionary API
+class WordInput(BaseModel):
+    word: str = Field(description="Word to look up")
+
+def define_word(word: str) -> Any:
+    url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+    with httpx.Client(timeout=10) as client:
+        r = client.get(url)
+        r.raise_for_status()
+        return r.json()
+
+dictionary_tool = StructuredTool(
+    name="define_word",
+    description="Get word definitions from Dictionary API",
+    func=define_word,
+    args_schema=WordInput,
+)
+
+## Quotes API
+class QuoteInput(BaseModel):
+    category: str = Field(default="", description="Category of quotes (optional)")
+
+def get_quote(category: str = "") -> Any:
+    url = "https://api.quotable.io/random"
+    params = {"tags": category} if category else {}
+    with httpx.Client(timeout=10) as client:
+        r = client.get(url, params=params)
+        r.raise_for_status()
+        return r.json()
+
+quote_tool = StructuredTool(
+    name="get_quote",
+    description="Fetch a random quote",
+    func=get_quote,
+    args_schema=QuoteInput,
 )
 
 
