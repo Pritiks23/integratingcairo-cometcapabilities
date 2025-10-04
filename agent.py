@@ -57,6 +57,14 @@ def build_cairo_agent(builtin_tools: Optional[List[str]] = None) -> Runnable:
         news_tool,
         weather_tool,
         pinterest_tool,
+        calendly_tool,
+        pixabay_tool,
+        tmdb_tool,
+        crypto_tool,
+        joke_tool,
+        dictionary_tool,
+        quote_tool,
+]
         # Add any additional tools as needed
     ]
     tools = guard_tools(tools)  # Enforce policy: block like/comment actions
