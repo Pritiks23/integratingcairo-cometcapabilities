@@ -1,6 +1,6 @@
 # integratingcairo-cometcapabilities
 
-Below are revised versions of your agent.py and search.py files. The agent now acts as a deeply integrated AI orchestrator, much like Perplexity's Comet and similar MCP servers. It can autonomously select and use tools connected to a wide variety of APIs and web resources—covering payments (Stripe), email (Gmail/SMTP), calendar, news aggregation, mapping (Google Maps), and extensible web app actions in a centralized environment. It maintains memory, manages action permissions, and provides full autonomy within set guardrails. You can further expand the tools directory with additional connectors for any other cloud service or API.
+Below are revised versions of your agent.py and search.py files. The agent now acts as a deeply integrated AI orchestrator, much like Perplexity's Comet and similar MCP servers. It can autonomously select and use tools connected to a wide variety of APIs and web resources—, news aggregation, pinterest, and etc in a centralized environment. It maintains memory, manages action permissions, and provides full autonomy within set guardrails. You can further expand the tools directory with additional connectors for any other cloud service or API.
 
 
 Whats different and why: 
